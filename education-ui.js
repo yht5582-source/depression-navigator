@@ -5,7 +5,7 @@ function learningSources(keys){return `<div class="learning-sources">依據：${
 function applyTeachingCase(id,destination='assessment'){
  const item=ED.cases.find(c=>c.id===id);if(!item)return;
  const hasCurrent=state.visits.length||state.baseline.phq.some(n=>n!==null)||state.baseline.age||state.baseline.weeks;
- if(hasCurrent&&!confirm('載入示範會替換目前個案及追蹤。請先匯出需要保留的資料，是否繼續？'))return;
+ if(hasCurrent&&!confirm('載入示範會替換目前個案及追蹤。請先匯出需要保留的資料，是否繼續？')){const menu=$('#demo');if(menu)menu.value='';return;}
  const data=ED.getCase(id,initial,today());
  state={schema:1,baseline:data.baseline,visits:data.visits,persist:state.persist,demo:item.title};draft=followInitial();tab=destination;history.replaceState(null,'','#'+tab);render(true);toast('已載入虛構示範病例，請勿與真實個案混用。');
 }
