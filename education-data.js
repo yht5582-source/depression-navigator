@@ -1,0 +1,88 @@
+(function(root){'use strict';
+const sources={nice:{name:'NICE NG222',url:'https://www.nice.org.uk/guidance/ng222/chapter/recommendations'},ng225:{name:'NICE NG225：自傷風險評估',url:'https://www.nice.org.uk/guidance/ng225/chapter/Recommendations#risk-assessment-tools-and-scales'},canmat:{name:'CANMAT 2023 更新（2024 發表）',url:'https://journals.sagepub.com/doi/full/10.1177/07067437241245384'},dsm:{name:'NCBI：重鬱發作條件',url:'https://www.ncbi.nlm.nih.gov/books/NBK498652/table/depress-diab.T.dsm5__major_depressive_ep/?report=objectonly'},sertraline:{name:'DailyMed：Sertraline',url:'https://www.dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=a2f333af-d37b-4705-ab7a-d363e3186e6e'},duloxetine:{name:'DailyMed：Duloxetine',url:'https://www.dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=05a744a5-64ef-42d7-a19c-568be5a272d4'}};
+const cases=[
+{id:'mild',title:'輕症與心理治療偏好',age:'45',phq:[1,1,1,1,1,1,1,0,0],patch:{function:'mild',preference:'psychotherapy'},route:'mdd',story:'四週來低落、失去樂趣及睡眠精力下降；訪談確認六項症狀多數日持續，仍可工作。PHQ-9 7 分，偏好心理治療。量表與面談可能不完全一致，應重新核對。',assessment:'確認症狀時間、頻率、痛苦與功能，直接詢問安全與躁期。',plan:'討論引導式自助、CBT／行為活化，尊重偏好。',follow:'約 2–4 週重評量表、功能、安全及介入執行情況。',source:['nice','dsm']},
+{id:'moderate',title:'中重症與焦慮失眠',age:'45',phq:[3,3,3,2,1,2,2,1,0],patch:{sleep:'insomnia',preference:'combined'},route:'mdd',story:'低落、無樂趣、失眠、自責與專注下降四週，工作受影響。PHQ-9 17 分，願意合併治療，無當前自傷想法與躁期。',assessment:'整合症狀、功能與病史，不以分數單獨確診。',plan:'共同討論 CBT 合併抗憂鬱劑，按睡眠、體重及耐受性選藥，並非所有選項一起服用。',follow:'開始藥物通常兩週內複評，之後每 2–4 週監測，惡化提前。',source:['nice','canmat']},
+{id:'renal',title:'高齡、透析與食慾不振',age:'74',phq:[2,2,2,2,1,2,2,1,0],patch:{renal:'dialysis',sleep:'lowweight',goal:'恢復與家人共餐，維持透析後可負擔的日常活動'},route:'mdd',story:'血液透析病人四週低落、無興趣、食慾差與失眠。PHQ-9 14 分，疲倦與食慾也可能受尿毒、貧血及營養問題影響。',assessment:'同步檢視透析、貧血、營養及現用藥，不把所有身體症狀歸於憂鬱。',plan:'心理及社會支持；若選藥，sertraline 可討論，但仍需個別評估。透析避免 duloxetine。',follow:'留意低血鈉、出血、跌倒、食慾、功能與安全。',source:['nice','sertraline','duloxetine']},
+{id:'bipolar',title:'躁期病史鑑別',age:'45',phq:[2,2,2,2,1,2,2,1,0],patch:{mania:'yes'},route:'bipolar',story:'目前低落四週，但曾有數日睡很少仍精力旺盛、話多、衝動花費且與平常明顯不同。',assessment:'核對發作時間、嚴重程度、功能改變及家屬觀察，釐清躁期／輕躁期與混合特徵。',plan:'先精神專科評估，避免直接用抗憂鬱劑單方。',follow:'追蹤睡眠需求、精力、衝動與安全，不只追蹤憂鬱分數。',source:['nice','canmat']},
+{id:'risk',title:'低總分但第九題陽性',age:'45',phq:[1,1,0,0,0,0,0,0,1],patch:{ideation:'yes',symptoms:[false,false,false,false,false,false,false,false,true]},route:'safety',story:'PHQ-9 僅 3 分，但第九題為 1 分，偶爾覺得死掉比較好。當前意圖、計畫及工具可近性尚需直接訪談。',assessment:'今日完成臨床風險評估，不能以低總分推斷安全。',plan:'共同安全計畫、支持及聯絡安排；有立即危險立即急診。',follow:'依臨床需要密集聯絡；這不代表停止必要的憂鬱症治療。',source:['nice','ng225']},
+{id:'young-adult',title:'22 歲初次治療與早期複評',added:true,age:'22',phq:[2,3,2,2,1,2,2,1,0],patch:{weeks:'6',preference:'combined',goal:'逐步恢復上課與規律睡眠'},route:'mdd',story:'六週低落、失去興趣、失眠、自責與專注下降，缺課增加。PHQ-9 15 分，直接訪談無自傷意圖與躁期，願意心理介入並討論藥物。',assessment:'核對壓力、物質使用、雙相線索、安全與支持，否認想法不取代完整評估。',plan:'共同選擇治療，說明初期焦躁、惡化徵兆與求助方式。',follow:'18–25 歲開始或增加抗憂鬱劑後一週複評安全與耐受性；惡化則更早。',source:['nice','canmat']},
+{id:'pain',title:'憂鬱合併慢性疼痛的選藥',added:true,age:'58',phq:[2,2,2,2,2,2,2,2,0],patch:{weeks:'8',concern:'pain',goal:'恢復每日可負擔的步行及活動'},route:'mdd',story:'八週低落、失去興趣與慢性疼痛，PHQ-9 16 分。腎肝功能正常，無已知 QT 風險或重大交互作用。',assessment:'檢視疼痛、功能、血壓、病史及現用藥，不以疼痛一項決定處方。',plan:'心理介入與活動支持；若藥物適合，duloxetine 可討論，須核對血壓、肝腎及交互作用。',follow:'同時追蹤情緒、疼痛、血壓及功能。日後 GFR ＜30 或透析時重新選藥。',source:['nice','duloxetine']},
+{id:'medical-cause',title:'甲狀腺異常與情緒鑑別',added:true,age:'49',phq:[2,2,3,3,2,2,2,1,0],patch:{weeks:'8',medical:'yes'},route:'medical',story:'八週低落疲倦，合併怕冷、便祕及心跳偏慢，TSH 升高、free T4 偏低。PHQ-9 17 分。',assessment:'釐清身體疾病直接造成或加重症狀，也可能共存原發性憂鬱，不能只憑量表確診。',plan:'同步處理甲狀腺疾病、情緒困擾與安全，再決定憂鬱症治療路徑。',follow:'觀察病因治療後的情緒及功能，持續顯著症狀應重評共病。',source:['dsm','nice']},
+{id:'perinatal',title:'產後哺乳與共同照護',added:true,age:'32',phq:[3,3,3,2,2,2,2,1,0],patch:{weeks:'5',perinatal:'yes',goal:'恢復自我照顧，建立支持與照護分工'},route:'special',story:'產後兩個月、哺乳中，低落、無樂趣、自責五週，PHQ-9 18 分。需鑑別憂鬱、雙相及產後精神病相關情況。',assessment:'詢問本人與嬰兒安全、躁期、幻覺妄想、睡眠及支持，有立即危險須緊急評估。',plan:'精神科及婦產科共同決策，討論母嬰風險與既有藥物，一般成人工具不自動提供周產期處方。',follow:'密切評估安全、睡眠、支持及功能；勿自行突然停藥。',source:['nice']},
+{id:'psychotic',title:'重症合併妄想的專科分流',added:true,age:'67',phq:[3,3,3,3,2,3,3,2,0],patch:{weeks:'6',function:'severe',psychosis:'yes'},route:'specialist',story:'六週重度低落及功能受損，堅信自己使全家破產，與事實不符而無法動搖。PHQ-9 22 分。',assessment:'當日評估精神病性症狀、營養水分、僵直、身體病因與維持安全的能力。',plan:'儘速專科評估抗憂鬱劑合併抗精神病藥或 ECT；若拒食拒水或無法維持安全則立即急診。',follow:'按重症與安全狀態密集監測，不採一般四週等待策略。',source:['nice','canmat']},
+{id:'short-duration',title:'喪親後一週與主動監測',added:true,age:'39',phq:[2,2,2,1,1,0,0,0,0],patch:{weeks:'1',function:'mild',symptoms:[true,true,false,true,false,true,false,false,false],preference:'psychotherapy'},route:'subthreshold',story:'喪親後一週低落、失眠及疲倦，仍能部分維持生活。PHQ-9 8 分，目前無立即安全疑慮，面談確認四項症狀。',assessment:'目前未滿重鬱發作的時間與症狀條件；喪親不自動排除共存或未來的憂鬱症。',plan:'支持、哀傷照護及心理介入，主動安排重評，不因未滿兩週就不處理。',follow:'約 2–4 週重評，持續惡化、功能下降或安全問題則提前。',source:['dsm','nice']},
+{id:'resistant',title:'兩次充分療程後效果不足',added:true,age:'54',phq:[3,3,3,3,2,2,2,2,0],patch:{weeks:'24',previous:'failed2',function:'severe'},route:'mdd',story:'症狀持續六個月，PHQ-9 20 分。兩種抗憂鬱劑皆經確認足量、足夠時間且規律服用，仍無足夠改善。',assessment:'重核診斷、雙相、共病、交互作用及實際療程；曾開過兩種藥不等於兩次充分療程失敗。',plan:'轉專科討論換藥、增強、心理治療、rTMS、ECT 或合適的 ketamine／esketamine 專業療程，不自動加藥。',follow:'依安全及嚴重度密集追蹤，持續重視功能與生活品質。',source:['canmat','nice']},
+{id:'adherence',title:'療效追蹤：漏服與未達足量',added:true,age:'61',phq:[3,3,3,2,2,2,2,1,0],patch:{weeks:'10',goal:'恢復規律治療與每日出門活動'},route:'mdd',timeline:true,story:'六週前 PHQ-9 18 分，目前 12 分，因噁心頻繁漏服，尚未連續四週足量。功能仍有中度影響。',assessment:'降低約 33%，尚未達常用 50% 反應標準。先檢視治療暴露、耐受性及障礙，不能直接判抗藥性。',plan:'處理副作用、理解與可近性，討論可耐受療程，避免自行驟停或直接多藥增強。',follow:'附兩筆模擬追蹤，可一鍵載入趨勢頁。新自傷想法、躁期或嚴重不良反應優先於總分處理。',source:['nice','canmat']}
+];
+function getCase(id,initial,today){const c=cases.find(c=>c.id===id);if(!c)throw Error('未知病例');const b=initial();Object.assign(b,{age:c.age,weeks:'4',function:'moderate',distress:'yes',acute:'no',ideation:'no',pastAttempt:'no',severe:'no',psychosis:'no',mania:'no',medical:'no',perinatal:'no',otherPsychosis:'no',confirmSymptoms:true,symptoms:[true,true,true,true,false,true,true,false,false],renal:'normal',liver:'normal',qt:'no',interaction:'no',seizure:'no',...c.patch});b.phq=[...c.phq];b.symptoms=[...b.symptoms];let visits=[];if(c.timeline){const date=days=>new Date(Date.parse(today+'T00:00:00Z')-days*86400000).toISOString().slice(0,10);b.date=b.startDate=date(42);const v=(days,phq,note)=>({date:date(days),phq,acute:'no',ideation:'no',mania:'no',serious:'no',side:'mild',adherence:'poor',adequate:'no',function:'moderate',note});visits=[v(14,[2,2,2,2,2,2,1,1,0],'模擬：噁心造成頻繁漏服，未達足量'),v(0,[2,2,2,1,1,2,1,1,0],'模擬：處理依從性與耐受性，不直接判抗藥性')];}return {case:c,baseline:b,visits};}
+const questions=[
+['q01','基礎','診斷','成人重鬱發作的症狀與時間條件何者正確？',['任意三項持續三天','同一段至少兩週有至少五項，且含低落或失去興趣','PHQ-9 ≥10 就確診','只要失眠兩週'],1,'還需確認顯著痛苦／功能受損及鑑別；量表或單一症狀均不足以確診。',['dsm']],
+['q02','基礎','安全','PHQ-9 3 分但第九題 1 分，最適當處理？',['因低總分而忽略','四週後再問','今日直接完成自殺風險臨床評估','再填一張量表即可保證安全'],2,'第九題任何正向回答都需直接詢問意圖、計畫、工具、行為與支持；總分低不能保證安全。',['nice','ng225']],
+['q03','基礎','雙相鑑別','過去曾睡很少仍精力旺盛、話多且衝動消費，現在低落，應先做什麼？',['直接提高抗憂鬱劑','視為正常恢復不追問','只追蹤 PHQ-9','釐清躁期／輕躁期與雙相病史'],3,'需核對異常發作與功能，必要時轉專科；憂鬱量表不能排除雙相，不宜直接套用單方治療。',['nice','canmat']],
+['q04','基礎','共同決策','症狀較輕、無立即安全問題，偏好心理治療，合理做法？',['討論引導式自助、CBT／行為活化並約定追蹤','強制所有人立即用藥','只給衛教後結案','症狀輕就不評估功能'],0,'依需要、偏好及可近性選擇治療，仍需支持、預訂複評與惡化時求助方式。',['nice']],
+['q05','基礎','早期追蹤','22 歲開始抗憂鬱劑，NICE 建議首次安全複評通常何時？',['三個月後','六週後','一週後，惡化可更早','等患者要求'],2,'18–25 歲者開始或增加抗憂鬱劑後一週複評自殺相關症狀與耐受性，不等例行長期門診。',['nice']],
+['q06','基礎','療效','基線 PHQ-9 18 分，追蹤 9 分，如何解讀？',['下降 9%','下降 50%，達常用反應標準但仍需評估緩解與功能','一定已持續緩解','當天自行停藥'],1,'改善率為 (18−9)/18＝50%；反應不等於持續緩解或功能完全恢復，也不是自行停藥的理由。',['canmat']],
+['q07','基礎','緩解','PHQ-9 ＜5 時最恰當的說法？',['一定沒有安全問題','不需追蹤功能','當天停止治療','落在症狀緩解範圍，仍需確認功能、持續時間與安全'],3,'單次低分不是持續緩解或零風險，恢復須整合生活功能、殘餘症狀及安全。',['canmat','nice']],
+['q08','基礎','腎功能','透析病人憂鬱合併疼痛，對 duloxetine 何者正確？',['透析／嚴重腎損傷避免，個別評估其他選藥','有疼痛所以一定首選','每次透析後自動補一顆','腎功能對所有抗憂鬱劑皆無影響'],0,'Duloxetine 仿單對 GFR ＜30／末期腎病有避免使用的安全考量；不能用疼痛特徵凌駕腎臟安全。',['duloxetine']],
+['q09','基礎','維持','維持藥物療程的時間原點通常從何時討論？',['第一張處方起滿六個月一律停','確認緩解後，並依復發風險定期評估','PHQ-9 第一次少一分','藥盒用完'],1,'NICE 通常至少緩解後六個月，CANMAT 6–12 個月；依復發風險可更久，不能到期自動停。',['nice','canmat']],
+['q10','基礎','急症','嚴重低落合併拒食拒水、身體不穩或疑似僵直，應如何處理？',['只建議多運動','四週後重測 PHQ-9','立即安排緊急醫療評估與專科照護','自行從網頁選增強用藥'],2,'需處理身心急症與安全，不能以生活介入或例行追蹤延誤。專科可評估快速治療的適應情境。',['nice','canmat']],
+['q11','進階','分層差異','PHQ-9 15 分在一般五級分數為中重度。依 NICE NG222 如何看待？',['已達 16 分分界','五級標籤就是診斷標準','只看分數忽略功能','仍低於 16 分參考分界，整合功能及臨床嚴重度'],3,'一般五級與 NICE 較輕／較重分層用途不同；15 未達 16，仍需整體評估，不能混成自動處方規則。',['nice']],
+['q12','進階','治療暴露','六週僅改善 25%，因噁心頻繁漏服且尚未足量，下一步？',['立刻判抗藥性並加兩種藥','處理依從性與耐受性，核對實際足量週數及診斷','經過六週就代表充分療程','有改善就停止追蹤'],1,'時間經過不代表足量且規律執行；先處理障礙並核對診斷，再共同決定療程優化。',['canmat','nice']],
+['q13','進階','新風險','PHQ-9 20 降到 8，但睡眠需求減少、精力旺盛且衝動，應如何做？',['當正常恢復，繼續自行加量','總分下降就忽略','儘速評估躁期／混合特徵並聯絡治療團隊','只給睡眠衛教'],2,'新異常亢奮可能改變診斷與安全處置；量表改善不能排除新風險，勿自行調藥。',['nice','canmat']],
+['q14','進階','身體共病','低落疲倦合併怕冷便祕，TSH 高、free T4 低，PHQ-9 17，最佳解讀？',['釐清並處理身體病因，也評估共存憂鬱與安全','量表足夠不用管甲狀腺','甲狀腺異常證明不可能共存憂鬱','立刻自行停掉所有抗憂鬱藥'],0,'身體病因可造成／加重症狀，也可與憂鬱共存。同步照護並追蹤病程，不由量表確診或自行驟停藥。',['dsm','nice']],
+['q15','進階','周產期','產後兩個月哺乳中，PHQ-9 18，如何使用本工具？',['按一般成人排名自行選藥','哺乳不能接受任何治療','先自行停既有精神藥','精神科／婦產科共同照護，評估母嬰安全與用藥'],3,'周產期需專門風險效益評估，不治療也有風險；一般成人工具不自動套用周產期處方，不自行停藥。',['nice']],
+['q16','進階','風險工具','何者符合 NICE NG225 的安全評估原則？',['低風險量表可保證安全出院','不以量表預測自殺或決定是否提供治療／出院','第九題零分即免訪談','簽不自殺承諾就足夠'],1,'應以需求、臨床評估及共同安全計畫為核心；量表陰性與承諾都不能保證安全。',['ng225']],
+['q17','進階','功能','PHQ-9 18 降到 3，但仍無法維持日常生活，下一步？',['宣布完全恢復','停止追蹤','確認功能障礙、共病與支持需求，重新檢討照護','用三分計算未來自殺機率'],2,'症狀與生活功能不同，整體恢復也包含功能、生活品質及安全；量表不能估算個人自殺機率。',['canmat','nice']],
+['q18','進階','療程失敗','兩種藥皆確認足量、足夠時間且規律服用，仍不足，何者合理？',['核對診斷共病，轉專科討論換藥、增強與神經調控','不重評就一直照同方式換藥','網頁自動開始 lithium／抗精神病藥','宣告已無治療選項'],0,'需重新核對影響療效因素，依情境討論心理治療、rTMS、ECT 等；增強療法需專業選擇、檢查及監測。',['canmat','nice']],
+['q19','進階','停藥','維持治療後希望停藥，何者正確？',['人人固定兩天停完','任何停藥症狀必為復發','所有不適都忽略','共同規劃漸進減量，按症狀調整並區分停藥反應與復發'],3,'減量速度個別化，可能需數週至數月；依時間與症狀脈絡區分停藥反應和復發，明顯不適聯絡團隊。',['nice','canmat']],
+['q20','進階','喪親病程','喪親後一週低落、四項症狀，無立即安全問題，何者正確？',['喪親永久排除憂鬱','目前未符合時間／症狀條件，仍支持並安排重評','未滿兩週皆不需處理','按 PHQ-9 分數直接確診用藥'],1,'喪親不自動排除憂鬱；未滿重鬱發作條件仍有照護需求，追蹤功能、安全與病程，惡化提前。',['dsm','nice']]
+].map(([id,level,topic,stem,options,answer,explanation,source])=>({id,level,topic,stem,options,answer,explanation,source}));
+const mapSpec=[
+['安全優先','assessment',['nice','ng225'],[
+ ['立即危險',['當前意圖、具體計畫、可取得工具、近期行為或無法維持安全','安排陪同與緊急醫療評估，不等待量表或例行回診']],
+ ['直接訪談',['第九題任何陽性或臨床疑慮：詢問意圖、計畫、過往行為、物質及支持','不以低總分、風險分層或不自殺承諾保證安全']],
+ ['共同安全計畫',['寫下預警、自我調適、可信任的人、醫療聯絡與工具安全','依臨床需要密集聯絡；安全問題優先於分數改善']]
+]],
+['診斷與鑑別','diagnosis',['dsm','nice'],[
+ ['重鬱發作條件',['同一段至少兩週、至少五項症狀，含低落或失去興趣','顯著痛苦／功能受損，需完整病史與精神狀態檢查']],
+ ['雙相與其他精神病',['詢問躁期／輕躁期、混合特徵、家族史與藥物誘發亢奮','幻覺妄想或其他精神病性疾患需專科；不直接單方抗憂鬱']],
+ ['身體、物質與病程',['依線索查甲狀腺、貧血、睡眠、藥物與物質；可有共病','鑑別哀傷、適應障礙與持續性憂鬱；喪親不自動排除憂鬱']]
+]],
+['分層與共同決策','treatment',['nice','canmat'],[
+ ['整合嚴重度',['PHQ-9 五級分數描述症狀負擔，不單獨確診','NICE ＜16／≥16 是治療參考分界，需合併功能與臨床判斷']],
+ ['選擇治療',['較輕症狀可先引導式自助、CBT 或行為活化','較高負擔討論心理合併藥物，仍尊重適合的單一治療選擇']],
+ ['個人目標',['過往療效、偏好、可近性、費用、支持及共病共同影響選擇','訂定可觀察的功能目標，例如共餐、上課或規律活動']]
+]],
+['心理與生活介入','treatment',['nice','canmat'],[
+ ['有結構的心理治療',['CBT、行為活化或 IPT 依個人情境與可近性選擇','規劃出席、居家練習與介入目標，並追蹤執行情況']],
+ ['生活支持',['規律作息，逐步恢復可負擔運動、營養與社會連結','處理壓力、孤立、物質使用及照顧負擔']],
+ ['主動監測',['支持與衛教要有預訂複評，等待心理治療時也維持聯絡','未達完整診斷仍應處理困擾，惡化或安全問題提前']]
+]],
+['藥物與用藥安全','treatment',['nice','sertraline','duloxetine'],[
+ ['選藥前核對',['肝腎、透析、QT、癲癇／飲食疾患、現用藥及換藥計畫','MAOI、linezolid 等重大交互作用需醫師／藥師確認']],
+ ['常見單藥討論',['Sertraline／escitalopram 是常用選項，留意低血鈉、出血及性功能','Mirtazapine 可討論失眠與食慾差，但注意嗜睡、體重及跌倒']],
+ ['成分特別限制',['Duloxetine 合併疼痛可討論，GFR ＜30／透析或慢性肝病避免','高齡、肝病、QT 風險採個別調整，不套用一般最高劑量']],
+ ['不是處方組合',['列出的是不同選項，不代表全部併用，也不是療效排名','核對實際 TFDA 品項、院內藥與健保規範，不自動認定給付']]
+]],
+['特殊族群與重症','treatment',['nice','canmat'],[
+ ['年齡與周產期',['18–25 歲開始或增加抗憂鬱劑後一週複評，惡化更早','未滿18歲轉兒少流程；懷孕／產後／哺乳共同評估母嬰風險']],
+ ['高齡與透析',[' fatigue／食慾／睡眠須與尿毒、貧血、營養與藥物共同解讀','監測低血鈉、出血、跌倒、代謝及功能，不只量表']],
+ ['精神病性／生命危險',['妄想幻覺儘速專科，命令性幻聽或無法維持安全立即評估','僵直、拒食拒水或身體不穩立即就醫，專科考慮 ECT 等']]
+]],
+['量測追蹤與療效不足','followup',['nice','canmat'],[
+ ['早期與定期複評',['首次藥物複評通常兩週內；年輕或有自殺疑慮一週','每 2–4 週評估症狀、安全、功能、副作用及規律治療']],
+ ['解讀療效',['反應常用較基線降低 ≥50%；PHQ-9 ＜5 是緩解範圍','單次分數不能代表持續緩解；功能與安全仍需獨立評估']],
+ ['改善不足先查原因',['重新核對診斷、雙相、共病、交互作用、依從性及足量週數','兩次充分療程失敗轉專科討論換藥、增強、rTMS／ECT 等']]
+]],
+['維持、復發與減藥','followup',['nice','canmat'],[
+ ['緩解後維持',['NICE 通常至少六個月；CANMAT 6–12 個月，從確認緩解後討論','反覆發作、殘餘症狀與嚴重病史可需更久，定期重評']],
+ ['復發預防',['確認預警、壓力、支持者、功能目標與就醫方式','至少每六個月檢討維持藥物的效益、副作用及持續需要']],
+ ['共同減量',['依臨床狀況逐步減量，可能需數週至數月，勿突然停藥','按症狀與時間脈絡區分停藥反應和復發，必要時聯絡團隊']]
+]]
+];
+const mindmap=mapSpec.map(([title,tab,source,groups],i)=>({id:'m'+(i+1),title,tab,source,children:groups.map(([title,leaves],j)=>({id:`m${i+1}-${j+1}`,title,children:leaves.map((title,k)=>({id:`m${i+1}-${j+1}-${k+1}`,title}))}))}));
+function grade(answers){const submitted=questions.filter(q=>Number.isInteger(answers[q.id])&&answers[q.id]>=0&&answers[q.id]<q.options.length);return {answered:submitted.length,correct:submitted.filter(q=>answers[q.id]===q.answer).length,total:questions.length};}
+function filterMap(nodes,query){const q=query.trim().toLocaleLowerCase();if(!q)return nodes;return nodes.flatMap(n=>{if(n.title.toLocaleLowerCase().includes(q))return[n];const children=filterMap(n.children||[],q);return children.length?[{...n,children}]:[];});}
+const api={sources,cases,questions,mindmap,getCase,grade,filterMap};root.DepressionLearning=api;if(typeof module!=='undefined')module.exports=api;
+})(globalThis);
