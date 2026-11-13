@@ -30,7 +30,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(action==='quiz-next'||action==='quiz-prev'){quizIndex+=action==='quiz-next'?1:-1;quizIndex=Math.max(0,Math.min(quizItems().length-1,quizIndex));render();$('.quiz-question')?.focus();}
  if(action==='quiz-reset'){quizAnswers={};quizPicks={};quizIndex=0;quizFilter='all';render();toast('已重設全部考題，個案資料不受影響。');}
  if(action==='map-clear'){mapQuery='';render();}
- if(action==='map-recall'){mapRecall=!mapRecall;mapRevealed=new Set();render();toast(mapRecall?'複習模式：重點已遮住，點擊逐條顯示。':'已顯示全部重點。');}
+ if(action==='map-recall'){mapRecall=!mapRecall;mapRevealed=new Set();if(mapRecall){const all=ns=>ns.flatMap(n=>n.children?[n.id,...all(n.children)]:[]);mapOpen=new Set(all(ED.mindmap));}render();toast(mapRecall?'複習模式：重點已遮住，點擊逐條顯示。':'已顯示全部重點。');}
  if(action==='map-expand'||action==='map-collapse'){const open=action==='map-expand';mapOpen=new Set();$('#mindmap-tree').querySelectorAll('details').forEach(d=>{d.open=open;if(open)mapOpen.add(d.dataset.mapNode);});}
  if(action==='map-print'){if(mapRecall){mapRecall=false;render();}const nodes=[...$('#mindmap-tree').querySelectorAll('details')],prior=nodes.map(n=>n.open);nodes.forEach(n=>n.open=true);const restore=()=>{nodes.forEach((n,i)=>n.open=prior[i]);window.removeEventListener('afterprint',restore);};window.addEventListener('afterprint',restore);window.print();}
 });
