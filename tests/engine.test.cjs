@@ -15,3 +15,4 @@ test('improvement does not suppress new safety events',()=>{for(const[p,r]of [[{
 test('unknown followup safety not routine',()=>assert.equal(E.followup(baseline(),{...visit(),acute:'unknown'}).route,'incomplete'));
 test('severe function loss prevents simple recovery',()=>assert.equal(E.followup(baseline(),{...visit(),phq:Array(9).fill(0),function:'severe'}).route,'review'));
 test('no automatic failure for early or poor adherence',()=>{assert.match(E.followup(baseline(),{...visit(),date:'2026-09-16',phq:baseline().phq,adequate:'no'}).title,/早期/);assert.match(E.followup(baseline(),{...visit(),phq:baseline().phq,adherence:'poor'}).title,/未規律/);});
+

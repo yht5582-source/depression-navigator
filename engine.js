@@ -38,3 +38,4 @@ function followup(b,v){const n=sum(v.phq),base=sum(b.phq),change=n!==null&&base>
  return {route,title,message,score:n,change,weeks};}
 const api={sum,severity,evaluate,treatment,followup};root.DepressionEngine=api;if(typeof module!=='undefined')module.exports=api;
 })(globalThis);
+
